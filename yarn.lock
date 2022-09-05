@@ -67,6 +67,16 @@
   resolved "https://registry.yarnpkg.com/@rbxts/compiler-types/-/compiler-types-1.3.3-types.1.tgz#94710f75af8676bb26a9d11ef645f0a4349c01e9"
   integrity sha512-iWeioe5WziBTnY+FIT7aQ5bimlw81PYZ5d9WO0h1kX3joEigXPQpn2yHGRxzrqIssqQr47Y6fwknklaaQ6IPMQ==
 
+"@rbxts/knit@^0.0.21-alpha.0":
+  version "0.0.21-alpha.0"
+  resolved "https://registry.yarnpkg.com/@rbxts/knit/-/knit-0.0.21-alpha.0.tgz#64462cafdfe6b50c21ff3d4e312d8b4be8595371"
+  integrity sha512-NDDa/bpVQPOr4eN8kIRNP8s6Q/s1dOxJa69QPC8Bx181wecyBCPHPFbtlLaIV0ZpCQ8rrzjnB2bU6dgvYumEGQ==
+
+"@rbxts/services@^1.5.1":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@rbxts/services/-/services-1.5.1.tgz#4536a87932f28797507ed591f0061277c52ea77f"
+  integrity sha512-SRtfIjga0K4YYSXRpK+eH3kcTq7ZXo9OHOt0jszaOOoEOIJloMGlyuRPqesPHyhveh2AMXAZr3TYbRMSD+u+kQ==
+
 "@rbxts/types@^1.0.640":
   version "1.0.640"
   resolved "https://registry.yarnpkg.com/@rbxts/types/-/types-1.0.640.tgz#8903a7ee7d48ee0da3ddfdc772b3106420d522cd"
