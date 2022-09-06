@@ -1,4 +1,4 @@
-type HexModel = Model & {
+type Hex = Model & {
 	Terrain: Model;
 	Guides: Model & {
 		UpperBaseplate: UnionOperation & {

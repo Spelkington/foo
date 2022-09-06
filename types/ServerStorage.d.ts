@@ -1,4 +1,7 @@
 interface ServerStorage extends Instance {
+	TagList: Folder & {
+		Hex: Configuration;
+	};
 	Hexes: Folder;
 	ComponentModels: Folder & {
 		Hex: Model & {
@@ -15,12 +18,30 @@ interface ServerStorage extends Instance {
 			};
 			Constructions: Model;
 			Links: Model & {
-				["60"]: Part;
-				["0"]: Part;
-				["180"]: Part;
-				["240"]: Part;
-				["300"]: Part;
-				["120"]: Part;
+				["60"]: Part & {
+					Attachment: Attachment;
+				};
+				["0"]: Part & {
+					Attachment: Attachment;
+				};
+				["-1"]: Part & {
+					Attachment: Attachment;
+				};
+				["180"]: Part & {
+					Attachment: Attachment;
+				};
+				["1"]: Part & {
+					Attachment: Attachment;
+				};
+				["240"]: Part & {
+					Attachment: Attachment;
+				};
+				["300"]: Part & {
+					Attachment: Attachment;
+				};
+				["120"]: Part & {
+					Attachment: Attachment;
+				};
 			};
 		};
 	};
