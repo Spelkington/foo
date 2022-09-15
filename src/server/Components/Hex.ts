@@ -1,95 +1,117 @@
-import { Component, Janitor } from "@rbxts/knit";
-import { Workspace, ServerStorage } from "@rbxts/services"
+import { Component } from "@rbxts/knit";
+import { Workspace, ServerStorage, CollectionService } from "@rbxts/services";
 
 class Hex implements Component.ComponentClass {
-    public static Tag = "Hex";
-    private static HEX_MAP = new Map<string, Hex>();
-    private janitor = new Janitor();
-    private model: HexModel = ServerStorage.ComponentModels.Hex;
+	/**
+	 * Knit/CollectionService tag for this component
+	 *
+	 * @static
+	 * @memberof Hex
+	 */
+	public static Tag = "Hex";
 
-    public name: string;
+	/**
+	 * List of all Hexes, populated as they're loaded by Knit and placed into the
+	 * CollectionService
+	 *
+	 * @private
+	 * @static
+	 * @type {Hex[]}
+	 * @memberof Hex
+	 */
+	private static HEX_LIST: Hex[] = [];
 
-    constructor(instance: Instance) {
-        assert(instance.IsA("Model"))
-        this.model = instance as HexModel;
-        this.name = instance.Name
+	/**
+	 * Base model for a Hex. Used to build the type definition for HexModel.
+	 *
+	 * @public
+	 * @type {HexModel}
+	 * @memberof Hex
+	 */
+	public model: HexModel = ServerStorage.ComponentModels.Hex;
 
-        // If this is an initial load from Knit, move the Hex into storage
-        if (!ServerStorage.Hexes.FindFirstChild(this.model.Name)) {
-                this.model.Parent = ServerStorage.Hexes
-                print(`Transferred ${this.model.Name} into storage`)
-                Hex.HEX_MAP.set(this.model.Name, this)
-        }
-        else if (instance.Parent === Workspace)
-        {
-                // Destroy helper guides and link data
-                this.model.Links.Destroy()
-                this.model.Guides.Destroy()
-                this.LoadTerrain()
-        }
-    }
+	/**
+	 * Creates an instance of Hex.
+	 * @param {Instance} instance provided from the Knit component intialization
+	 * @memberof Hex
+	 */
+	constructor(instance: Instance) {
+		// Create a clone of the original hex and load it into ServerStorage
+		assert(instance.IsA("Model"));
+		this.model = instance.Clone() as HexModel;
+		this.model.Parent = ServerStorage.Hexes;
+		print(`Transferred ${this.model.Name} into storage`);
 
-    private LoadTerrain() {
-        for (let instance of this.model.Terrain.GetChildren()) {
+		// Log new hex into hex list
+		Hex.HEX_LIST.push(this);
 
-            // TODO: Add support for sphere, cylinder, and negative parts
-            if (instance.ClassName === "Part") {
-                assert(instance.IsA("Part"))
-                Workspace.Terrain.FillBlock(
-                    instance.CFrame,
-                    instance.Size,
-                    instance.Material
-                )
-            }
-            else if (instance.IsA("WedgePart")) {
+		// Remove the original instance from the Workspace
+		instance.Destroy();
+	}
 
-                // TODO: Find a way to more gracefully smooth over gaps between adjacent wedge hypots.
-                Workspace.Terrain.FillWedge(
-                    instance.CFrame,
-                    instance.Size,
-                    instance.Material
-                )
-            }
-            else {
-                print(`[WARN] ${this.model.Name}'s contained illegal terrain part ${instance.Name}`)
-            }
-        }
+	/**
+	 * Fills the terrain voxels for each part within the hex's Terrain model
+	 *
+	 * @private
+	 * @memberof Hex
+	 */
+	private LoadTerrain() {
+		// Iterate through all parts in HexModel.Terrain to fill them with Workspace terrain
+		for (const instance of this.model.Terrain.GetChildren()) {
+			// TODO: Add support for sphere, cylinder, and negative parts
+			if (instance.ClassName === "Part") {
+				assert(instance.IsA("Part"));
+				Workspace.Terrain.FillBlock(instance.CFrame, instance.Size, instance.Material);
+			} else if (instance.IsA("WedgePart")) {
+				Workspace.Terrain.FillWedge(instance.CFrame, instance.Size, instance.Material);
+			} else {
+				print(
+					`[WARN] ${this.model.Name}'s terrain contained illegal terrain part ${instance.Name}: ${instance.ClassName}`,
+				);
+			}
+		}
 
-        this.model.Terrain.Destroy()
-    }
+		this.model.Terrain.Destroy();
+	}
 
-    public static Load(id: string, targetCFrame: CFrame): Model {
+	/**
+	 * Loads a clone of the Hex into the Workspace at the provided CFrame, and returns
+	 *
+	 * @param {CFrame} targetCFrame for the new instance of the Hex model.
+	 * @return {HexModel} the model of the new instance of the Hex model.
+	 * @memberof Hex
+	 */
+	public Load(targetCFrame: CFrame): HexModel {
+		// Create a new dummy model
+		const newHex: HexModel = this.model.Clone();
+		CollectionService.RemoveTag(newHex, "Hex");
+		newHex.PivotTo(targetCFrame);
 
-        let original = ServerStorage.Hexes.FindFirstChild(id)
-        assert(original)
-        assert(original.IsA("Model"))
+		// Destroy development scaffolding
+		this.model.Links.Destroy();
+		this.model.Guides.Destroy();
 
-        let newHex = original.Clone();
-        newHex.PivotTo(targetCFrame)
-        newHex.Parent = Workspace
+		// Load terrain for hex
+		newHex.Parent = Workspace;
+		this.LoadTerrain();
 
-        // TODO: Load Terrain
+		return newHex;
+	}
 
-        return newHex;
-    }
+	/**
+	 * Returns a list of all loaded Hexes contained in ServerStorage
+	 *
+	 * @static
+	 * @return {Hex[]}
+	 * @memberof Hex
+	 */
+	public static GetHexList(): Hex[] {
+		return Hex.HEX_LIST;
+	}
 
-    public static GetHexList(includeEmpty: boolean = false): Array<Hex> {
-        let result = new Array<Hex>();
-        this.HEX_MAP.forEach((hex: Hex, label: string) => {
-            if (includeEmpty || hex.name !== "EmptyHex") {
-                result.push(hex)
-            }
-        });
-        return result
-    }
-
-    public static GetHex(label: string): Hex | undefined {
-        return this.HEX_MAP.get(label);
-    }
-
-    public Destroy() {
-        this.janitor.Destroy();
-    }
+	public Destroy() {
+		return;
+	}
 }
 
 export = Hex;
